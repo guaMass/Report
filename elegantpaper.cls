@@ -12,6 +12,7 @@
 \RequirePackage{ifxetex}
 \RequirePackage{etoolbox}
 \RequirePackage{calc}
+\RequirePackage{varwidth}
 
 \SetupKeyvalOptions{family=ELEGANT, prefix=ELEGANT@, setkeys=\kvsetkeys}
 \newcommand{\ekv}[1]{\kvsetkeys{ELEGANT}{#1}}
@@ -52,6 +53,8 @@
 \RequirePackage[font=small,labelfont={bf}]{caption} 
 \captionsetup[table]{skip=3pt}
 \captionsetup[figure]{skip=3pt}
+\RequirePackage{subcaption}
+ 
 
 % list/itemize/enumerate setting
 \RequirePackage[shortlabels,inline]{enumitem}
