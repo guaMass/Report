@@ -2,11 +2,11 @@
 % 完整编译: xelatex -> bibtex -> xelatex -> xelatex
 \documentclass[lang=cn,11pt,a4paper]{elegantpaper}
 
-\title{ElegantPaper: 一个优美的 \LaTeX{} 工作论文模板}
-\author{Ethan DENG \\ Fudan University \and Dongsheng DENG \\ PA Technology}
-\institute{\href{https://elegantlatex.org/}{Elegant\LaTeX{} 项目组}}
+\title{定位与导航实验报告}
+\author{Wugang Meng}
+\institute{哈尔滨工业大学(威海)}
 
-\version{0.08}
+\version{0.1}
 \date{\zhtoday}
 
 \begin{document}
@@ -14,45 +14,55 @@
 \maketitle
 
 \begin{abstract}
-本文为 \href{https://github.com/ElegantLaTeX/ElegantPaper/}{ElegantPaper} 的说明文档。此模板基于 \LaTeX{} 的 article 类，专为工作论文写作而设计。设计这个模板的初衷是让作者不用关心工作论文的格式，专心写作，从而有更加舒心的写作体验。如果你有其他问题、建议或者报告 bug，可以在 \href{https://github.com/ElegantLaTeX/ElegantPaper/issues}{Github::ElegantPaper/issues} 留言。如果你想了解更多 Elegant\LaTeX{} 项目组设计的模板，请访问 \href{https://github.com/ElegantLaTeX/}{Github::ElegantLaTeX}。
-\keywords{Elegant\LaTeX{}，工作论文，模板}
+本文为《**智能感知系统》项目中的定位与建图实验、自主导航实验给出了实验测试大纲。介绍了测试环境，测试软件硬件；具体化了实验步骤和实验指标，并体现了实验结果。
+\keywords{定位与建图，自主导航，试验大纲}
 \end{abstract}
 
 
 
-\section{模板使用须知}
+\section{测试概要}
 
-\subsection{模板介绍}
+\subsection{测试目标}
+进行本实验的目的是验证毫米波传感器能否与机器人操作系统（ROS）环境中流行的地图和导航库一起使用，这是许多机器人技术人员所熟悉的。
+本实验将Octomap服务器和move\_base库与TI的mmWave ROS驱动程序软件包以及DJI RoboMaster底盘库一起使用，以与TI mmWave传感器接口。本实验支持使用IWR1443ISK ES1.0 EVM或IWR1443ISK ES2.0 EVM。借助TI驱动程序和\href{ros.org}{ROS社区}的软件，工程师可以快速，轻松地评估机器人导航和避开物体。
+本实验室采用四个传感器一起使用。通过使用四个传感器，该机器人可以具有$360^{\circ}$视野，因此该机器人能够检测周围的物体，以便更好地进行地图绘制和导航。
 
-此模板基于 \LaTeX{} 的标准文类 article 设计，所以 article 文类的选项也能传递给本模板，比如 \lstinline{a4paper, 11pt} 等等。本模板支持 \hologo{pdfLaTeX} 和 \hologo{XeLaTeX} 编译。
+\subsection{测试环境}
+\subsubsection{场地环境}
+本实验采用DJI RMUC 的核心比赛场地，也被称为“战场”。战场是一个长为 28 米、宽为 15 米的区域，内部为木质结构，表
+面贴地胶（厚度 3mm），主要包含基地区、高地区、资源岛区、补给区和飞行区等。战场外围有上边沿距离战场地面高度为 2.4 米的黑色钢制围挡。
+全文描述的所有场地道具的尺寸误差均在$±5\%$以内。场地说明图纸尺寸参数单位为mm。
 
-\begin{lstlisting}
-\documentclass[a4paper,11pt]{elegantpaper}
-\end{lstlisting}
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{map.png}
+  \caption{测试场地渲染图}
+\end{figure}
 
-\textbf{注意}：Elegant\LaTeX{} 系列模板已经全部上传至 \href{https://www.overleaf.com/latex/templates/elegantpaper-template/yzghrqjhmmmr}{Overleaf} 上，用户可以在线使用。另外，为了方便国内用户，模板也已经传至\href{https://gitee.com/ElegantLaTeX/ElegantPaper}{码云}。
+\subsubsection{硬件设备}
+移动作战平台基于模块化设计，分为底盘模块，支持快拆结构，各模块可单独编程与调试使用。
+\begin{enumerate}[label=\arabic*).]
+  \item \textit{如何删除版本信息？}\\
+      导言区不写 \lstinline|\version{x.xx}| 即可。
+  \item \textit{如何删除日期？}\\
+      需要注意的是，与版本 \lstinline{\version} 不同的是，导言区不写或注释 \lstinline{\date} 的话，仍然会打印出当日日期，原因是 \lstinline{\date} 有默认参数。如果不需要日期的话，日期可以留空即可，也即 \lstinline|\date{}|。
+  \item \textit{如何获得中文日期？}\\
+      为了获得中文日期，必须在中文模式下\footnote{英文模式下，由于未加载中文宏包，无法输入中文。}，使用 \lstinline|\date{\zhdate{2019/10/11}}|，如果需要当天的汉化日期，可以使用 \lstinline|\date{\zhtoday}|，这两个命令都来源于 \href{https://ctan.org/pkg/zhnumber}{\lstinline{zhnumber}} 宏包。
+  \item \textit{如何添加多个作者？}\\
+      在 \lstinline{\author} 里面使用 \lstinline{\and}，作者单位可以用 \lstinline{\\} 换行。
+  \item \textit{如何添加中英文摘要？}\\
+      请参考 \href{https://github.com/ElegantLaTeX/ElegantPaper/issues/5}{Github::ElegantPaper/issues/5}
+\end{enumerate}
 
 
-\subsection{全局选项}
-此模板定义了一个语言选项 \lstinline{lang}，可以选择英文模式 \lstinline{lang=en}（默认）或者中文模式 \lstinline{lang=cn}。当选择中文模式时，图表的标题引导词以及参考文献，定理引导词等信息会变成中文。你可以通过下面两种方式来选择语言模式：
-\begin{lstlisting}
-\documentclass[lang=cn]{elegantpaper} % or
-\documentclass{cn}{elegantpaper} 
-\end{lstlisting}
-
-\textbf{注意：} 英文模式下，由于没有添加中文宏包，无法输入中文。如果需要输入中文，可以通过在导言区引入中文宏包 \lstinline{ctex} 或者加入 \lstinline{xeCJK} 宏包后自行设置字体。 
-\begin{lstlisting}
-\usepackage[UTF8,scheme=plain]{ctex}
-\end{lstlisting}
-
-\subsection{英文与数学字体}
+\subsection{测试方案}
 
 本模板使用 \lstinline{newtxtext} 和 \lstinline{newtxmath} 分别设置全文的英文文本字体和数学字体。数学字体的效果如下：
 \begin{equation}
 (a+3b)^{n} = \sum_{k=0}^{n} C_{n}^{k} a^{n-k} (3b)^k\label{eq:binom}
 \end{equation}
 
-\subsection{自定义命令}
+\subsection{条件与限制}
 此模板并没有修改任何默认的 \LaTeX{} 命令或者环境\footnote{目的是保证代码的可复用性，请用户关注内容，不要太在意格式，这才是本工作论文模板的意义。}。另外，我自定义了 4 个命令：
 \begin{enumerate}
   \item \lstinline{\email}：创建邮箱地址的链接，比如 \email{ddswhu@outlook.com}；
