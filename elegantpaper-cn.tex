@@ -29,7 +29,7 @@
 
 \subsection{测试环境}
 \subsubsection{场地环境}
-本实验采用DJI RMUC 的核心比赛场地，也被称为“战场”。战场是一个长为 28 米、宽为 15 米的区域，内部为木质结构，表
+本实验采用DJI RMUC 的核心比赛场地，也被称为“战场”。如图所示\ref{fig:map}战场是一个长为 28 米、宽为 15 米的区域，内部为木质结构，表
 面贴地胶（厚度 3mm），主要包含基地区、高地区、资源岛区、补给区和飞行区等。战场外围有上边沿距离战场地面高度为 2.4 米的黑色钢制围挡。
 全文描述的所有场地道具的尺寸误差均在$±5\%$以内。场地说明图纸尺寸参数单位为mm。
 
@@ -37,22 +37,118 @@
   \centering
   \includegraphics[width=\textwidth]{map.png}
   \caption{测试场地渲染图}
+  \label{fig:map}
 \end{figure}
 
 \subsubsection{硬件设备}
-移动作战平台基于模块化设计，分为底盘模块，支持快拆结构，各模块可单独编程与调试使用。
+移动作战平台基于模块化设计，分为动力模块，感知模块，控制模块和计算模块。所有模块支持快拆结构，各模块可单独编程与调试使用。
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{chassis.png}
+  \caption{动力模块设计图}
+  \label{fig:chassis}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \subcaptionbox{直流无刷减速电机\label{fig:3508}}
+  {\includegraphics{m3508.png}}
+  \subcaptionbox{电子调速器\label{fig:620}}
+  {\includegraphics{C620.png}}
+  \caption{电机与电子调速器设计图}\label{ele}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{manifold.png}
+  \caption{计算模块}
+  \label{fig:manifold}
+\end{figure}
+
 \begin{enumerate}[label=\arabic*).]
-  \item \textit{如何删除版本信息？}\\
-      导言区不写 \lstinline|\version{x.xx}| 即可。
-  \item \textit{如何删除日期？}\\
-      需要注意的是，与版本 \lstinline{\version} 不同的是，导言区不写或注释 \lstinline{\date} 的话，仍然会打印出当日日期，原因是 \lstinline{\date} 有默认参数。如果不需要日期的话，日期可以留空即可，也即 \lstinline|\date{}|。
-  \item \textit{如何获得中文日期？}\\
-      为了获得中文日期，必须在中文模式下\footnote{英文模式下，由于未加载中文宏包，无法输入中文。}，使用 \lstinline|\date{\zhdate{2019/10/11}}|，如果需要当天的汉化日期，可以使用 \lstinline|\date{\zhtoday}|，这两个命令都来源于 \href{https://ctan.org/pkg/zhnumber}{\lstinline{zhnumber}} 宏包。
-  \item \textit{如何添加多个作者？}\\
-      在 \lstinline{\author} 里面使用 \lstinline{\and}，作者单位可以用 \lstinline{\\} 换行。
-  \item \textit{如何添加中英文摘要？}\\
-      请参考 \href{https://github.com/ElegantLaTeX/ElegantPaper/issues/5}{Github::ElegantPaper/issues/5}
+  \item \textit{动力模块}\\
+      动力模块是承载和安装机器人动力系统及其附属部件的机构。如图\ref{fig:chassis}所示使用麦克纳姆轮，支持全向运动。动力系统由RoboMaster M3508 P19 无刷直流减速电机（图\ref{fig:3508}）和RoboMaster C620 电子调速器组成（图\ref{fig:620}）。
+      C620无刷电机调速器采用32位定制电机驱动芯片，配合磁场定向控制（FOC）技术，实现对电机转矩的精确控制。M3508直流无刷减速电机是专为中小型移动平台和机器人等量身打造的高性能伺服电机，可搭配C620电调实现正弦驱动，相比传统方波驱动具有更高的效率、机动性和稳定性。本产品减速箱减速比约为19:1。
+  \item \textit{感知模块}\\
+      感知模块应组装一个远距高分辨级联模组mmWave-CAS EVM如图\ref{fig:CAS}和四个mmWave EVM如图\ref{fig:mini}所示。根据EVM的版本，安装可能会略有不同。
+      在所示示例中，用于安装mmWave EVM的支架是3D打印的。
+      对于本演示而言，至关重要的是，必须每隔90度将mmWave EVM安装在机器人周围，与机器人中心等距。
+      在所示示例中，将12V至5V转换器安装在顶板中心下方，而USB分配器则放置在顶板下方。四个EVM使用USB分配器连接到计算模块。
+  \item \textit{控制模块}\\
+      控制模块使用RoboMaster 开发板A型 (STM32F427) 作为主控板，开发板主控芯片为STM32F427IIH6，拥有丰富的扩展接口和通信接口包括12V/5v/3.3v电源接口，CAN接口，UART接口、可变PWM接口、SWD接口，
+      板载IMU传感器，可配合RoboMaster出品的M3508、 M2006直流无刷减速电机、UWB模块以及计算模块等产品使用，亦可配合DJI飞控SDK使用，配件丰富。
+  \item \textit{计算模块}\\
+  计算模块使用的是英特尔酷睿 i7-8550U 处理器，功率范围5-60W，具备优秀的处理能力和响应速度的同时仅有200g左右的超轻重量。
 \end{enumerate}
+
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{radar_b.png}
+  \caption{mmWave-CAS EVM}\label{fig:CAS}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{radar_mb.png}
+  \caption{mmWave EVM}\label{fig:mini}
+\end{figure}
+  
+
+\begin{table}[!htbp]
+  \centering
+  \caption{计算模块规格参数}
+  \begin{tabular}{cc}
+    \toprule
+    参数名称  & 参考数值  \\
+    \midrule
+    重量  & 205g   \\
+    尺寸 & $91 \times 61 \times 35$ mm  \\
+    处理器 &  i7-8550U \\
+    内存 & 8GB 64bit，DDR4 2400MHz \\
+    SATA-SSD & 256GB\\
+    网络 & 千兆以太RJ-45接口\\
+    USB & USB3.0(Type A)$\times 2$，USB3.0(Micro-B)$\times 1$ \\
+    I/O & UART $\times 1$  \\
+    功率 & 5-60w \\
+    电源 & 15.2-27.0V电源接口$\times 2$  \\
+    工作温度 & -25至45$^{\circ}$C\\
+  \bottomrule
+  \end{tabular}%
+\end{table}%
+
+\subsubsection{软件平台}
+
+软件平台以机器人传感器->感知->决策->规划->控制->执行器 的环路进行架构，不同模块具体以ROS Package的形式维护，模块和其数据流如下图所示。
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{flow.png}
+  \caption{架构与模块介绍}\label{fig:flow}
+\end{figure}
+
+\begin{enumerate}[label=\arabic*).]
+  \item \textit{传感器、控制器与执行器}\\
+      中心模块集成传感器模块（雷达、相机、IMU等）、嵌入式控制平台（执行实时任务，如闭环控制和数据采集与预处理）与执行器（电机等），负责sensing和control两大任务，具体ROS Package为包含嵌入式SDK的roborts\_base，相机的roborts\_camera以及相关传感器驱动包。
+  \item \textit{感知部分}\\
+      感知部分包括机器人定位、地图的维护和抽象、目标识别与追踪等。localization模块负责机器人定位，是导航系统中强依赖的节点，其主要通过获得一系列的传感器信息，通过特定算法的处理，最终得到机器人坐标系到地图坐标系的变换关系，也就是机器人在地图中的位姿。
+      map模块负责机器人地图维护，目前采用ROS开源Package map\_server。
+      costmap模块负责代价地图维护，集成了静态地图层，障碍物层和膨胀层，主要用于运动规划部分，不单纯针对规划使用。
+      detection模块负责目标识别和追踪，主要利用mmWave-CAS EVM对拍摄到的点云信息进行物体的聚类与跟踪。
+  \item \textit{任务调度与决策部分}\\
+  任务调度与决策部分包括调度感知输入模块和调度规划执行输出模块的接口，以及决策的核心框架。
+  decision模块为机器人决策框架，以行为树（BehaviorTree）为决策框架。blackboard模块调度各种模块的感知任务获取信息，behavior模块集成了离散动作空间的各种动作或行为。
+  executor模块是behavior模块的依赖，其包含底盘和云台内不同模块内不同抽象程度的机器人任务委托接口（例如调度底盘运动规划执行）。
+  \item \textit{运动规划部分}\\
+  运动规划部分是运动规划功能模块，由决策部分中chassis\_executor模块来调度完成导航。global\_planner模块负责机器人的全局路径规划，全局路径规划（简称全局规划）是导航系统中运动规划的第一个步骤，在给定目标位置后，根据感知的全局代价地图搜索得到一条无碰撞的最短路径（即一系列离散的坐标点），然后作为输入传递给局部轨迹规划模块控制机器人的具体运动。全局路径规划A Star算法，
+  是一种静态路网中求解最短路最有效的方法。公式表示为：
+  $$
+    f(n)=g(n)+h(n)
+    \label{a*}
+  $$
+  其中$f(n)$是节点$n$从初始点到目标点的估价函数，$g(n)$是在状态空间中从初始节点到$n$节点的实际代价，$h(n)$是从$n$到目标节点最佳路径的估计代价。在实际的全局路径规划中，静态网路由全局代价地图提供。
+  local\_planner模块负责机器人的局部轨迹规划模块，局部路径规划模块根据机器人的里程计信息,雷达的感知信息,结合全局路径规划给出的最优路径,计算出机器人当前能够避免与障碍物碰撞的最优速度。局部路径规划的相关算法参考 Time Elastic Band，算法建立了轨迹执行时间的目标方程，在满足与障碍物保持安全距离, 运动时遵守动力学约束的前提下,优化机器人实际运行轨迹,最终求出机器人可执行的速度。
+\end{enumerate}
+
 
 
 \subsection{测试方案}
