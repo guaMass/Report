@@ -264,28 +264,66 @@
   
 
 \RequirePackage{listings}
-\renewcommand{\ttdefault}{cmtt}
-
-\lstdefinestyle{estyle}{
-  basicstyle=%
-    \ttfamily
-    \lst@ifdisplaystyle\footnotesize\fi
+\lstset{%
+  frame=tlbr,framesep=4pt,framerule=0pt,% 
+  resetmargins=false,%
+  rulesepcolor=\color{black},%
+  numbers=left,%                % left
+  numberstyle=\tiny,%
+  numbersep=5pt,%
+  firstnumber=1,%
+  stepnumber=5,%
+  columns=fixed,%               % to prevent inserting spaces
+  fontadjust=true,%
+  keepspaces=true,%
+  basewidth=0.5em,%
+  captionpos=t,%
+  abovecaptionskip=\smallskipamount,% same amount as default
+  belowcaptionskip=\smallskipamount,% in caption package
 }
-\lstset{basicstyle=\scriptsize\ttfamily,style=estyle}
+\lstdefinestyle{bash}{%
+  backgroundcolor=\color{yellow!10},%
+  basicstyle=\small\ttfamily,%
+  identifierstyle=\color{black},%
+  keywordstyle=\color{blue},%
+  keywordstyle={[2]\color{cyan}},%
+  keywordstyle={[3]\color{olive}},%
+  stringstyle=\color{teal},%
+  commentstyle=\itshape\color{orange},%
+}%
+\lstdefinestyle{bashbw}{%
+  backgroundcolor={},%
+  basicstyle=\small\ttfamily,%
+  identifierstyle={},%
+  keywordstyle=\bfseries,%
+  stringstyle=\itshape,%
+  commentstyle=\slshape,%
+  rulesepcolor=\color{black},%
+}%
 
-\lstset{language=[LaTeX]TeX,
-	texcsstyle=*\color{winered},
-	numbers=none,
-	breaklines=true,
-	keywordstyle=\color{winered},
-	frame=tlbr,framesep=4pt,framerule=0pt,
-	commentstyle=\color{commentcolor},
-	emph={elegantpaper,fontenc,fontspec,xeCJK,FiraMono,xunicode,newtxmath,figure,fig,image,img,table,itemize,enumerate,newtxtext,newtxtt,ctex,microtype,description,times,newtx,booktabs,tabular,PDFLaTeX,XeLaTeX,type1cm,BibTeX,cite,gbt7714,lang},
-	emphstyle={\color{frenchplum}},
-	morekeywords={DeclareSymbolFont,SetSymbolFont,toprule,midrule,bottomrule,institute,version,includegraphics,setmainfont,setsansfont,setmonofont ,setCJKmainfont,setCJKsansfont,setCJKmonofont,RequirePackage,figref,tabref,email,maketitle,keywords,zhdate,zhtoday},
-	tabsize=2,
-	backgroundcolor=\color{lightgrey}
-}
+
+%\renewcommand{\ttdefault}{cmtt}
+
+%\lstdefinestyle{estyle}{
+%  basicstyle=%
+%    \ttfamily
+%    \lst@ifdisplaystyle\footnotesize\fi
+%}
+%\lstset{basicstyle=\scriptsize\ttfamily,style=estyle}
+
+%\lstset{language=[LaTeX]TeX,
+%	texcsstyle=*\color{winered},
+%	numbers=none,
+%	breaklines=true,
+%	keywordstyle=\color{winered},
+%	frame=tlbr,framesep=4pt,framerule=0pt,
+%	commentstyle=\color{commentcolor},
+%	emph={elegantpaper,fontenc,fontspec,xeCJK,FiraMono,xunicode,newtxmath,figure,fig,image,img,table,itemize,enumerate,newtxtext,newtxtt,ctex,microtype,description,times,newtx,booktabs,tabular,PDFLaTeX,XeLaTeX,type1cm,BibTeX,cite,gbt7714,lang},
+%	emphstyle={\color{frenchplum}},
+%	morekeywords={DeclareSymbolFont,SetSymbolFont,toprule,midrule,bottomrule,institute,version,includegraphics,setmainfont,setsansfont,setmonofont ,setCJKmainfont,setCJKsansfont,setCJKmonofont,RequirePackage,figref,tabref,email,maketitle,keywords,zhdate,zhtoday},
+%	tabsize=2,
+%	backgroundcolor=\color{lightgrey}
+%}
 
 
 

@@ -1,6 +1,7 @@
 %!TEX program = xelatex
 % 完整编译: xelatex -> bibtex -> xelatex -> xelatex
 \documentclass[lang=cn,11pt,a4paper]{elegantpaper}
+\lstset{,style=bash}
 
 \title{定位与导航实验报告}
 \author{Wugang Meng}
@@ -119,7 +120,7 @@
 
 \subsubsection{软件平台}
 
-软件平台以机器人传感器->感知->决策->规划->控制->执行器 的环路进行架构，不同模块具体以ROS Package的形式维护，模块和其数据流如下图所示。
+软件平台以机器人传感器$\rightarrow$感知$\rightarrow$决策$\rightarrow$规划$\rightarrow$控制$\rightarrow$执行器 的环路进行架构，不同模块具体以ROS Package的形式维护，模块和其数据流如下图所示。
 \begin{figure}
   \centering
   \includegraphics[width=\textwidth]{flow.png}
@@ -175,8 +176,26 @@
 \subsubsection{硬件指标测量}
 直接对设备测量即可。测量项目包括尺寸，质量，设备功耗等。
 
+\subsubsection{软件指标测试}
+首先连接STM32设备的虚拟串口，lsusb可以查看Vendor和Product的ID，然后创建并配置/etc/udev/rules.d/roborts.rules文件：
+\begin{lstlisting}[language=bash]
+  KERNEL=="ttyACM*", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="5740", 
+  MODE:="0777", SYMLINK+="serial_sdk"
+\end{lstlisting}
+同理配置雷达。然后重新加载并启动udev服务，可能需要重新插拔设备后生效。
+\begin{lstlisting}[language=bash]
+  SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea70",
+  SYMLINK+="mmWave_%s{serial}_%E{ID_USB_INTERFACE_NUM}"
+\end{lstlisting}
+
+
 \subsubsection{环境建图指标测量}
-直接对设备测量即可。测量项目包括尺寸，质量，设备功耗等。
+首先如图3-2中所示，安装LPS收发天线，并如图3-3所示，做好防水处理，并在图3-1所示场地中摆放六组天线，
+通过线缆与射频装置连接；其次，通过图3-4所示，利用全站仪在中心点对各个雷达天线位置进行精准定位，
+将定位值输入电脑中；最后，开启LPS，通过一段时间的通信与同步，
+开始推动小车按照路线行驶，待行驶结束，完成实验，计算定位误差。
+
+\subsubsection{自主导航指标测量}
 
 \subsection{测试进度安排}
 
@@ -225,63 +244,12 @@
 
 \section{常见问题 FAQ}
 
-\begin{enumerate}[label=\arabic*).]
-  \item \textit{如何删除版本信息？}\\
-      导言区不写 \lstinline|\version{x.xx}| 即可。
-  \item \textit{如何删除日期？}\\
-      需要注意的是，与版本 \lstinline{\version} 不同的是，导言区不写或注释 \lstinline{\date} 的话，仍然会打印出当日日期，原因是 \lstinline{\date} 有默认参数。如果不需要日期的话，日期可以留空即可，也即 \lstinline|\date{}|。
-  \item \textit{如何获得中文日期？}\\
-      为了获得中文日期，必须在中文模式下\footnote{英文模式下，由于未加载中文宏包，无法输入中文。}，使用 \lstinline|\date{\zhdate{2019/10/11}}|，如果需要当天的汉化日期，可以使用 \lstinline|\date{\zhtoday}|，这两个命令都来源于 \href{https://ctan.org/pkg/zhnumber}{\lstinline{zhnumber}} 宏包。
-  \item \textit{如何添加多个作者？}\\
-      在 \lstinline{\author} 里面使用 \lstinline{\and}，作者单位可以用 \lstinline{\\} 换行。\begin{lstlisting}
-\author{author 1\\ org. 1 \and author 2 \\ org. 2 }
-\end{lstlisting}
-  \item \textit{如何添加中英文摘要？}\\
-      请参考 \href{https://github.com/ElegantLaTeX/ElegantPaper/issues/5}{Github::ElegantPaper/issues/5}
-\end{enumerate}
+
 
 \section{示例}
 
 为了让大家更加清楚最终的论文效果，如下给出两篇使用 ElegantPaper 模板排版的工作论文示例，也欢迎大家“投稿”！
 
-\begin{enumerate}
-  \item \href{https://github.com/EthanDeng/bank-custody}{银行存管、投资者决策与 P2P 网络借贷规范发展}；
-  \item \href{https://github.com/EthanDeng/risk-awareness}{互联网金融风险与投资者风险意识 —— 来自网贷平台交易数据的证据}。
-\end{enumerate}
-
-这是一个最小示例文档（Minimal Example）：
-\begin{lstlisting}
-\documentclass[lang=cn,a4paper,11pt]{elegantpaper}
-
-% title information
-\title{Working Paper Example}
-\author{Author Name} 
-\institute{Elegant\LaTeX{} Group}
-
-\version{1.00}
-\date{\today}
-
-\begin{document}
-
-\maketitle
-
-\begin{abstract}
-Your abstract goes here.
-\keywords{keyword1, keyword2}
-\end{abstract}
-
-\section{Introduction}
-The content of introduction section.
-
-\section{Conclusion}
-The content of conclusion section.
-
-\bibliography{wpref}
-
-\end{document}
-\end{lstlisting}
-
-\nocite{*}
 \bibliography{wpref}
 
 \end{document}
