@@ -75,7 +75,7 @@
       对于本演示而言，至关重要的是，必须每隔90度将mmWave EVM安装在机器人周围，与机器人中心等距。
       在所示示例中，将12V至5V转换器安装在顶板中心下方，而USB分配器则放置在顶板下方。四个EVM使用USB分配器连接到计算模块。
   \item \textit{控制模块}\\
-      控制模块使用RoboMaster 开发板A型 (STM32F427) 作为主控板，开发板主控芯片为STM32F427IIH6，拥有丰富的扩展接口和通信接口包括12V/5v/3.3v电源接口，CAN接口，UART接口、可变PWM接口、SWD接口，
+      控制模块使用RoboMaster 开发板C型 (STM32F427) 作为主控板，开发板主控芯片为STM32F427IIH6，拥有丰富的扩展接口和通信接口包括12V/5v/3.3v电源接口，CAN接口，UART接口、可变PWM接口、SWD接口，
       板载IMU传感器，可配合RoboMaster出品的M3508、 M2006直流无刷减速电机、UWB模块以及计算模块等产品使用，亦可配合DJI飞控SDK使用，配件丰富。
   \item \textit{计算模块}\\
   计算模块使用的是英特尔酷睿 i7-8550U 处理器，功率范围5-60W，具备优秀的处理能力和响应速度的同时仅有200g左右的超轻重量。
@@ -152,50 +152,36 @@
 
 
 \subsection{测试方案}
-
-本模板使用 \lstinline{newtxtext} 和 \lstinline{newtxmath} 分别设置全文的英文文本字体和数学字体。数学字体的效果如下：
-\begin{equation}
-(a+3b)^{n} = \sum_{k=0}^{n} C_{n}^{k} a^{n-k} (3b)^k\label{eq:binom}
-\end{equation}
+在重量和尺寸检测方面，分别称量设备的重量和尺寸。在功耗测量方面，通过稳压限流模块精准控制单一设备功耗。在建图精度测试方面，通过定位时间戳与室内定位基站作为参考，比较测量误差。
+在定位精度方面，在图\ref{fig:map}场地进行测试，通过小车车载LPS定位装置与UWB定位装置，完成规定路径的行驶，通过比较UWB与LPS的定位航迹，计算LPS的定位误差。
 
 \subsection{条件与限制}
-此模板并没有修改任何默认的 \LaTeX{} 命令或者环境\footnote{目的是保证代码的可复用性，请用户关注内容，不要太在意格式，这才是本工作论文模板的意义。}。另外，我自定义了 4 个命令：
+本次实验等比例模拟了某区域的城市环境、地面材料及战车尺寸、质量等参数，力图复现一个真实且残酷的战场环境。
+但仍受以下客观条件限制。
 \begin{enumerate}
-  \item \lstinline{\email}：创建邮箱地址的链接，比如 \email{ddswhu@outlook.com}；
-  \item \lstinline{\figref}：用法和 \lstinline{\ref} 类似，但是会在插图的标题前添加 <\textbf{图 n}> ；
-  \item \lstinline{\tabref}：用法和 \lstinline{\ref} 类似，但是会在表格的标题前添加 <\textbf{表 n}>；
-  \item \lstinline{\keywords}：为摘要环境添加关键词。
+  \item  本实验在室内封闭进行，因而无法使用无人机设备进行空中拍摄，故仅提供侧轴视角和POV视角测试视频;
+  \item  因为UWB、LPS、IMU和里程计都存在误差，因此定位与建图结果在此误差基础上会存在一定且无法消除的偏移;
+  \item  高分辨识别雷达（图\ref{fig:CAS}）和建图与导航雷达（图\ref{fig:mini}）采用解耦合设计，高分辨识别雷达仅作目标识别之用不参与建图与导航过程;
 \end{enumerate}
 
-\subsection{参考文献}
-此模板使用 \hologo{BibTeX} 来生成参考文献，中文模式下默认使用的文献样式（bib style）是 \lstinline{GB/T 7714-2015}\footnote{通过调用 \href{https://ctan.org/pkg/gbt7714}{\lstinline{gbt7714}} 宏包}。参考文献示例：~\cite{en3} 使用了中国一个大型的 P2P 平台（人人贷）的数据来检验男性投资者和女性投资者在投资表现上是否有显著差异。
+\section{测试计划}
 
-你可以在谷歌学术，Mendeley，Endnote 中获得文献条目（bib item），然后把它们添加到 \lstinline{wpref.bib} 中。在文中引用的时候，引用它们的键值（bib key）即可。注意需要在编译的过程中添加 \hologo{BibTeX} 编译。
+\subsection{测试项目}
+完成设备重量检测、功耗测量、建图精度测试、定位精度测试等内容，为后续实验提供指标参数与参考依据。
+测试目标包括高分辨雷达，建图雷达，导航基准为UWB接收机。
 
-本模板还添加了 \lstinline{cite=numbers} 、\lstinline{cite=super} 和 \lstinline{cite=authoryear}  三个参考文献选项，用于设置参考文献格式的设置，默认为 \lstinline{numbers}。理工科类一般使用数字形式 \lstinline{numbers} 或者上标形式 \lstinline{super}，而文科类多使用作者-年份 \lstinline{authoryear} 比较多。如果需要改为 \lstinline{cite=numbers}  或者  \lstinline{authoryear} ，可以使用
-\begin{lstlisting}
-\documentclass[cite=super]{elegantpaper} % super style ref style
-\documentclass[super]{elegantpaper}
+\subsection{测试技术流程}
 
-\documentclass[cite=authoryear]{elegantpaper} % author-year ref style
-\documentclass[authoryear]{elegantpaper}
-\end{lstlisting}
+\subsubsection{硬件指标测量}
+直接对设备测量即可。测量项目包括尺寸，质量，设备功耗等。
 
+\subsubsection{环境建图指标测量}
+直接对设备测量即可。测量项目包括尺寸，质量，设备功耗等。
 
-\section{协作人员招募}
-招募 Elegant\LaTeX{} 的协作人员，没有工资。工作内容：翻译 Elegant\LaTeX{} 系列模板相关的文稿（中翻英），维护模板的 wiki（主要涉及 Markdown），如果有公众号文稿写作经历的话，也可以帮忙写微信稿。本公告长期有效。
-
-目前 ElegantLaTeX 共有 4 名协作人员，分别是
-\begin{itemize}
-  \item 官方文档翻译: \href{https://github.com/peggy2006xzyz}{YPY};
-  \item Github 维基维护: \href{https://github.com/izinngo}{Ingo Zinngo}、\href{https://github.com/xiaohao890809}{追寻原风景};
-  \item QQ 群管理员: \href{https://github.com/sikouhjw}{Sikouhjw}.
-\end{itemize}
-
-在此感谢他们无私的奉献！
+\subsection{测试进度安排}
 
 
-\section{致谢}
+\section{测试结果}
 截止到 2019 年 10 月 17 日，ElegantPaper v0.08 版本发布，ElegantPaper 模板在 Github 上的收藏数（star）达到了 164。在此特别感谢 China\TeX{} 以及 \href{http://www.latexstudio.net/}{\LaTeX{} 工作室}对于本系列模板的大力宣传与推广。
 
 如果你喜欢我们的模板，你可以在 Github 上收藏（Star）我们的模板。
@@ -205,7 +191,7 @@
   \caption{一键三连求赞}
 \end{figure}
 
-\section{捐赠}
+\section{测试总结}
 如果您非常喜爱我们的模板，你还可以选择捐赠以表达您对我们模板和我的支持！
 
 \begin{figure}[htbp]
