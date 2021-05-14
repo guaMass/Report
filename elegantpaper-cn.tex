@@ -1,7 +1,7 @@
 %!TEX program = xelatex
 % 完整编译: xelatex -> bibtex -> xelatex -> xelatex
 \documentclass[lang=cn,11pt,a4paper]{elegantpaper}
-\lstset{,style=bash}
+\lstset{style=bash}
 
 \title{定位与导航实验报告}
 \author{Wugang Meng}
@@ -187,15 +187,78 @@
   SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea70",
   SYMLINK+="mmWave_%s{serial}_%E{ID_USB_INTERFACE_NUM}"
 \end{lstlisting}
+将北向传感器插入远程笔记本电脑，然后在命令行中键入以下内容：
+\begin{lstlisting}[language=bash]
+  ls -l /dev/ | grep mmWave
+\end{lstlisting}
+应出现两个符号链接，一个对应命令端口，一个对应数据端口。
+重复步骤，插入每个传感器，并在相应的方向启动文件中更改command\_port和data\_port字段。
+配置多个相同型号的雷达的会麻烦一些，由于Vendor和Product的ID是一样的，因此要查看每个数据端口具体的特性。
+\begin{lstlisting}[language=bash]
+  udevadm info --attribute-walk --name=/dev/ttyACM*
+\end{lstlisting}
 
+\subsubsection{环境感知指标测量}
 
-\subsubsection{环境建图指标测量}
-首先如图3-2中所示，安装LPS收发天线，并如图3-3所示，做好防水处理，并在图3-1所示场地中摆放六组天线，
-通过线缆与射频装置连接；其次，通过图3-4所示，利用全站仪在中心点对各个雷达天线位置进行精准定位，
-将定位值输入电脑中；最后，开启LPS，通过一段时间的通信与同步，
-开始推动小车按照路线行驶，待行驶结束，完成实验，计算定位误差。
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=.5\textwidth]{up.png}
+  \caption{整车装配图}
+  \label{fig:car}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{octmap.png}
+  \caption{实验场配置草图}
+  \label{fig:octmap}
+\end{figure}
+
+首先如图\ref{fig:car}中所示，装配整车四片导航雷达和前置摄像头，并如图\ref{fig:octmap}所示，将战车放置在图中起点位置。
+并在图所示场地中红线位置设置障碍物。红点位置设置LPS基站，并与战车定位系统同步。将定位值输入电脑中；
+启动远程控制程序：
+\begin{lstlisting}[language=ros]
+  roslaunch mmwave_launchers my_teleop.launch
+\end{lstlisting}
+打开一个新的终端窗口，将ssh连接到计算模块并运行以下命令打开所有雷达：
+\begin{lstlisting}[language=ros]
+  roslaunch mmwave_launchers sensor_bringup.launch
+  roslaunch mmwave_launchers sensor_left.launch
+  roslaunch mmwave_launchers sensor_right.launch
+  roslaunch mmwave_launchers sensor_back.launch
+\end{lstlisting}
+聚焦远程控制窗口，遥控战车完成建图。
 
 \subsubsection{自主导航指标测量}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{getmap.png}
+  \caption{雷达建立地图}
+  \label{fig:getmap}
+\end{figure}
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{navgoal.png}
+  \caption{提供导航目标}
+  \label{fig:goal}
+\end{figure}
+
+
+首先如图\ref{fig:getmap}中所示，获取环境感知实验得到的雷达建图结果。
+\begin{lstlisting}[language=ros]
+  rosrun octomap_server octomap_server_node <pathtomap>.bt
+\end{lstlisting}	
+打开导航程序。
+\begin{lstlisting}[language=ros]
+  roslaunch mmwave_launchers crl_navigation.launch
+  rosrun my_plugin smooth_vel
+\end{lstlisting}
+为导航栈提供初始姿态估计，开始导航。选择2D Pose Estimate（沿屏幕顶部），
+然后单击战车在地图中的位置，并沿其面对的方向拖动。看到战车出现在起点时，点击后立即释放。
+再通过选择2D Nav goal并单击导航目标到位置并沿其面对的方向拖动，（如图\ref{fig:goal}所示）
+为战车指定一个导航目标。释放安全遥控后，应该开始导航到它的目标。
+
 
 \subsection{测试进度安排}
 

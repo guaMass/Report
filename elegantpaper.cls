@@ -300,6 +300,11 @@
   commentstyle=\slshape,%
   rulesepcolor=\color{black},%
 }%
+\lstdefinelanguage{ros}
+{morekeywords={sudo,roslaunch,rosrun},
+morestring=[b]<,
+morestring=[d]>,
+}
 
 
 %\renewcommand{\ttdefault}{cmtt}
