@@ -4,7 +4,7 @@
 \lstset{style=bash}
 
 \title{定位与导航实验报告}
-\author{Wugang Meng}
+\author{Wugang Meng \\ Xiang Feng}
 \institute{哈尔滨工业大学(威海)}
 
 \version{0.1}
@@ -15,10 +15,151 @@
 \maketitle
 
 \begin{abstract}
-本文为《**智能感知系统》项目中的定位与建图实验、自主导航实验给出了实验测试大纲。介绍了测试环境，测试软件硬件；具体化了实验步骤和实验指标，并体现了实验结果。
+本文介绍了《**智能感知系统》项目中的定位与建图实验、自主导航实验的理论基础、详尽的软件执行流程和具体参数。
+为了本次实验的可复现性，除提供程序源码外还详述了本次实验的测试大纲。包括但不限于本次实验的测试环境，软件硬件条件以及实验的具体步骤和已达到的实验指标，并体现了实验结果的有效性。
 \keywords{定位与建图，自主导航，试验大纲}
 \end{abstract}
 
+
+\section{定位与导航系统程序设计与实现}
+
+\subsection{自适应蒙特卡洛定位系统}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{amcl.png}
+  \caption{自适应蒙特卡洛定位算法流图}
+  \label{fig:amcl}
+\end{figure}
+
+自适应蒙特卡洛定位( AMCL, Adaptive Monte Carlo Localization)是一套适用于二维机器人运动的定位算法。
+其主要的算法原理源于算法\ref{MCL}, 算法\ref{Augmented_MCL}, 和算法\ref{KLD_MCL}算法的结合与实现。
+Motion Model和Sensor Model，用于AMCL中运动的预测和粒子权重的更新。
+本课题内部集成的AMCL，功能上添加了随机角度、随机位置和角度的初始化支持，以便于竞技比赛中的快速部署。
+\begin{algorithm}
+  \caption{蒙特卡洛定位算法}
+  \label{MCL}
+  \KwIn{$\mathcal X_{t-1}$,$ u_t$,$ z_t$,$ m$}
+  \KwOut{$\mathcal X_{t}$}
+  $\bar{\mathcal X_t} = \mathcal X_t = \emptyset$ \\
+  \For{$m=1$ $\mathbf{to}$ $M$}
+  {
+      $sample\,{ x_t}^{[m]} \sim p( x_t|u_t,{ x_{t-1}^{[m]}}, m)$ \\
+      ${ w_t}^{[m]}=p( z_t|{ x_t}^{[m]}, m)$ \\
+      $\bar{\mathcal X_t} = \bar{\mathcal X_t} + \langle { x_t}^{[m]},{ w_t}^{[m]} \rangle$
+  }
+  \For{$m=1$ ${to}$ $M$}
+  {
+      $\mathbf{draw}\, i\, \mathbf{with}\,\mathbf{probability}\,\propto  {w_t}^{[i]}$ \\
+      $\mathbf{add}\,{ x_t}^{[i]}\,\mathbf{to}\,\mathcal X_{t}$
+  }
+\end{algorithm}
+
+\begin{algorithm}
+  \caption{增强蒙特卡洛定位算法}
+  \label{Augmented_MCL}
+  \KwIn{$\mathcal X_{t-1}$,$ u_t$,$ z_t$,$ m$}
+  \KwOut{$\mathcal X_{t}$}
+  $\mathbf{static}\, w_{slow}\, w_{fast}$\\
+  $\bar{\mathcal X_t} = \mathcal X_t = \emptyset$ \\
+  \For{$m=1$ $\mathbf{to}$ $M$}
+  {
+      $sample\,{ x_t}^{[m]} \sim p( x_t|u_t,{ x_{t-1}^{[m]}}, m)$ \\
+      ${ w_t}^{[m]}=p( z_t|{ x_t}^{[m]}, m)$ \\
+      $\bar{\mathcal X_t} = \bar{\mathcal X_t} + \langle { x_t}^{[m]},{ w_t}^{[m]} \rangle$\\
+      $w_{avg} += \frac{1}{M} { w_t}^{[m]}$
+  }
+  $w_{slow}+=\alpha_{slow}(w_{avg}-w_{slow})$ \\
+  $w_{fast}+=\alpha_{fast}(w_{avg}-w_{fast})$ \\
+  \For{$m=1$ ${to}$ $M$}
+  {
+      $\mathbf{draw}\, i\, \mathbf{with}\,\mathbf{probability}\,\propto  {w_t}^{[i]}$ \\
+      $\mathbf{add}\,{ x_t}^{[i]}\,\mathbf{to}\,\mathcal X_{t}$
+  }
+\end{algorithm}
+
+\begin{algorithm}
+  \caption{库尔贝科-莱布勒散度采样蒙特卡洛定位算法}
+  \label{KLD_MCL}
+  \KwIn{$\mathcal X_{t-1}$,$ u_t$,$ z_t$,$ m$, $\varepsilon$, $\delta $}
+  \KwOut{$\mathcal X_{t}$}
+  $X_t = \emptyset$ \\
+  $M=0$,$M_{\chi }=0$,$k=0$\\
+  \For{$\mathbf{all}$ $b$ $\mathbf{in}$ $H$}
+  {
+    $b = \mathbf{empty}$
+  }
+  \While{$M < M_{\chi} \Vert M < M_{\chi min}  $}
+  {
+    $\mathbf{draw}\, i\, \mathbf{with}\,\mathbf{probability}\,\propto  {w_t}^{[i]}$ \\
+    ${x_t}^{[m]} = \mathbf{smaple\_Motion\_model}(u_t,x_{t-1}^{[m]})$ \\
+    ${w_t}^{[m]} = \mathbf{measurement\_model}(z_t,x_{t}^{[m]},m)$ \\
+    $X_t += \left\langle {x_t}^{[m]},{w_t}^{[m]}\right\rangle $ \\
+    \If{${x_t}^{[m]}$ $\mathbf{falls}$ $\mathbf{in}$ $\mathbf{empty}$ $\mathbf{bin}$ $b$}
+    {
+      $k+=1$\\
+      $b = \mathbf{non-empty}$\\
+      \If{$k > 1$}
+      {
+        $M_{\chi} \coloneqq \frac{k-1}{2\varepsilon } \{ 1- \frac{2}{9(k-1)} + \sqrt{\frac{2}{9(k-1)}} z_{1-\delta }\} $
+      }
+    }
+    $M += 1$
+  }
+\end{algorithm}
+
+AMCL算法的设计详细参数如所表\ref{tab:amcl}所示：
+\begin{table}[!htbp]
+  \centering
+  \caption{AMCL设计参数}\label{tab:amcl}
+  \begin{tabular}{cc}
+    \toprule
+    参数名称  & 参考数值  \\
+    \midrule
+    粒子滤波器的最小粒子数  & 50                \\
+    粒子滤波器的最大粒子数  & 200               \\
+    滤波器更新的位移阈值   & 0.1               \\
+    滤波器更新的旋转阈值   & 0.5               \\
+    机器人运动模型      & 全向轮模型 \\
+    里程计模型的误差参数   & 0.05              \\
+    雷达的最小有效测距距离  & 0.15m             \\
+    雷达的最大有效测距距离  & 8m                \\
+    雷达的波束        & 90$^{\circ}$              \\
+    忽略波束的障碍物距离阈值 & 20cm              \\
+    重采样周期        & 不重采样             \\
+    $\alpha_{slow}$ & 0.001\\
+    $\alpha_{fast}$ & 0.1\\
+    $\varepsilon $  & 0.05\\
+    $1-\delta  $  & 0.99\\
+  \bottomrule
+  \end{tabular}%
+\end{table}%
+
+\subsection{全局路径规划系统}
+
+全局路径规划（简称全局规划）是导航系统中运动规划的第一个步骤，在给定目标位置后，根据感知的全局代价地图搜索得到一条无碰撞的最短路径（即一系列离散的坐标点），
+然后作为输入传递给局部轨迹规划模块控制机器人的具体运动。
+核心规划节点的执行流程如下:
+\begin{enumerate}
+  \item 初始化Actionlib Server，构建可视化的publisher。
+  \item 读取参数。
+  \item 创建tf listener，global\_costmap对象。
+  \item 创建具体算法的planner对象。
+  \item 回调队列在主线程开始回调，同时线程Actionlib Server Callback也开始回调。
+\end{enumerate}
+规划线程执行流程和Actionlib Server Callback线程执行流程如图\ref{fig:gp}和图\ref{fig:acb}所示。
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{gp.png}
+  \caption{全局规划线程执行流程}
+  \label{fig:gp}
+\end{figure}
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{acb.png}
+  \caption{Actionlib Server Callback线程执行流程}
+  \label{fig:acb}
+\end{figure}
 
 
 \section{测试概要}
@@ -45,10 +186,16 @@
 移动作战平台基于模块化设计，分为动力模块，感知模块，控制模块和计算模块。所有模块支持快拆结构，各模块可单独编程与调试使用。
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=\textwidth]{chassis.png}
+  \subcaptionbox{俯视图\label{fig:chassis1}}
+  {\includegraphics[width=.3\textwidth]{chassis.png}}
+  \subcaptionbox{主视图\label{fig:chassis2}}
+  {\includegraphics[width=.3\textwidth]{chassis_1.png}}
+  \subcaptionbox{侧视图\label{fig:chassis3}}
+  {\includegraphics[width=.3\textwidth]{chassis_2.png}}
   \caption{动力模块设计图}
   \label{fig:chassis}
 \end{figure}
+
 
 \begin{figure}
   \centering
@@ -80,6 +227,7 @@
       板载IMU传感器，可配合RoboMaster出品的M3508、 M2006直流无刷减速电机、UWB模块以及计算模块等产品使用，亦可配合DJI飞控SDK使用，配件丰富。
   \item \textit{计算模块}\\
   计算模块使用的是英特尔酷睿 i7-8550U 处理器，功率范围5-60W，具备优秀的处理能力和响应速度的同时仅有200g左右的超轻重量。
+  计算模块详细参数见表\ref{tab:manifold}。
 \end{enumerate}
 
 
@@ -91,14 +239,14 @@
 
 \begin{figure}
   \centering
-  \includegraphics[width=\textwidth]{radar_mb.png}
+  \includegraphics[width=.5\textwidth]{radar_mb.png}
   \caption{mmWave EVM}\label{fig:mini}
 \end{figure}
   
 
 \begin{table}[!htbp]
   \centering
-  \caption{计算模块规格参数}
+  \caption{计算模块规格参数}\label{tab:manifold}
   \begin{tabular}{cc}
     \toprule
     参数名称  & 参考数值  \\
@@ -209,7 +357,7 @@
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=\textwidth]{octmap.png}
+  \includegraphics[width=.5\textwidth]{octmap.png}
   \caption{实验场配置草图}
   \label{fig:octmap}
 \end{figure}
@@ -285,56 +433,41 @@
 \end{figure}
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=\textwidth]{s2.png}
+  \includegraphics[width=.5\textwidth]{s2.png}
   \caption{环境感知雷达尺寸测量}
   \label{fig:s2}
 \end{figure}
 
-通过对雷达与设备尺寸测量，如图\ref{fig:s1}所示，高分辨雷达体积$20mm \times 285mm \times 143mm$，达到指标要求。
-如图\ref{fig:s2}所示，环境感知雷达体积$6mm \times 70mm \times 80mm$，达到指标要求。
+通过对雷达与设备尺寸测量，如图\ref{fig:s1}所示，高分辨雷达体积$97mm \times 285mm \times 143mm$，达到指标要求。
+如图\ref{fig:s2}所示，环境感知雷达体积$15mm \times 70mm \times 80mm$，达到指标要求。
+
 \subsection{功率检测}
 通过对环境感知雷达利用稳压限流模块驱动，如图所示，工作功率2.5W，达到指标要求。
 
+\subsection{环境感知检测}
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{maptest.png}
+  \caption{环境感知检测结果}
+  \label{fig:maptest}
+\end{figure}
+通过对在建图结束时刻与结束时所保存的地图文件与场地设计文件以及LPS基站和车载里程计信息交叉比对，
+并取对误差取绝对值，求得同时定位与建图误差；通过实验，其测距误差如图\ref{fig:maptest}所示，误差在1mm到10mm之间，
+达到指标要求的10mm以内。
 
-\section{测试总结}
-如果您非常喜爱我们的模板，你还可以选择捐赠以表达您对我们模板和我的支持！
+\subsection{自主导航检测}
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.5\textwidth]{donate.jpg}
+  \includegraphics[width=\textwidth]{finish.jpg}
+  \caption{自主导航检测结果}
+  \label{fig:navtest}
 \end{figure}
 
-\textbf{赞赏费用的使用解释权归 Elegant\LaTeX{} 所有，并且不接受监督，请自愿理性打赏}。10 元以上的赞赏，我们将列入捐赠榜，谢谢各位金主！
+图\ref{fig:car}为实验战车，车上包括环境感知设备与LPS设备，场地见图\ref{fig:map}。
+按照图\ref{fig:goal}配置车辆后释放战车。战车再运行过程中，黄色线条为实时规划路径。图\ref{fig:navtest}可以看出战车
+在环境感知设备的辅助下无碰撞的完成了避障自主导航。
 
-\begin{table}[!htbp]
-  \centering
-  \caption{Elegant\LaTeX{} 系列模板捐赠榜}
-  \begin{tabular}{crcc}
-    \toprule
-    捐赠者   & 金额 & 时间 & 渠道 \\
-    \midrule
-    Lerh  & 10 元  & 2019/05/15 & 微信 \\
-    越过地平线 & 10 元    & 2019/05/15 & 微信 \\
-    大熊 &  20 元 & 2019/05/27 & 微信 \\
-    * 空 & 10 元 & 2019/05/30 & 微信\\
-    \href{http://www.latexstudio.net/}{latexstudio.net} & 666 元 & 2019/06/05 & 支付宝\\
-    Cassis & 11 元 & 2019/06/30 & 微信\\
-    * 君 & 10 元 & 2019/07/23 & 微信\\
-    * 萌 & 19 元 & 2019/08/28 & 微信 \\
-    曲豆豆 & 10 元 & 2019/08/28 & 微信 \\
-    李博 & 100 元 & 2019/10/06 & 微信\\
-    Njustsll & 10 元 & 2019/10/11 & 微信 \\
-  \bottomrule
-  \end{tabular}%
-\end{table}%
-
-\section{常见问题 FAQ}
-
-
-
-\section{示例}
-
-为了让大家更加清楚最终的论文效果，如下给出两篇使用 ElegantPaper 模板排版的工作论文示例，也欢迎大家“投稿”！
 
 \bibliography{wpref}
 

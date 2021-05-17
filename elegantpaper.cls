@@ -306,6 +306,10 @@ morestring=[b]<,
 morestring=[d]>,
 }
 
+% hithesis文档或者示例中给出的地址。
+\RequirePackage[boxed,linesnumbered]{algorithm2e}
+
+
 
 %\renewcommand{\ttdefault}{cmtt}
 
